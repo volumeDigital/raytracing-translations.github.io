@@ -1,3 +1,5 @@
+use in_one_weekend::color::*;
+
 fn main() {
     // Image
 
@@ -9,17 +11,15 @@ fn main() {
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
     for j in 0..image_height {
-        eprintln!("\rScanlines remaining: {}", (image_height - j));
+        eprintln!("\rScanlines remaining: {}", image_height - j);
         for i in 0..image_width {
-            let r = i as f64 / ((image_width - 1) as f64);
-            let g = j as f64 / ((image_width - 1) as f64);
-            let b = 0.0;
+            let pixel_color = Color::new(
+                i as f64 / ((image_width - 1) as f64),
+                j as f64 / ((image_height - 1) as f64),
+                0.0
+            );
 
-            let ir = (259.999 * r) as i32;
-            let ig = (259.999 * g) as i32;
-            let ib = (259.999 * b) as i32;
-
-            println!("{} {} {}", ir, ig, ib);
+            write_color(pixel_color);
         }
     }
     eprintln!("\rDone.                 \n");

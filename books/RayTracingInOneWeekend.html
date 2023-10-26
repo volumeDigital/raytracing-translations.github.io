@@ -11,7 +11,7 @@
                                                 <br>
                       Copyright 2018-2023 Peter Shirley. All rights reserved.
                                                 <br>
-                                    Translated to Rust by Tim Cussins
+                            Translation to (English/Rust) contributed by Tim Cussins
 
 
 
@@ -28,12 +28,23 @@ When somebody says “ray tracing” it could mean many things. What I am going 
 technically a path tracer, and a fairly general one. While the code will be pretty simple (let the
 computer do the work!) I think you’ll be very happy with the images you can make.
 
+!!!
+    And you know what? You will be, I can vouch for that! The images you can generate using this
+    book are really, truly beautiful, and as high-res as you dare to make them...
+
+    Hey there, I'm Tim, the editor of the translation of this book to the Rust Programming Language,
+    which is what you're reading right now!
+
+    I'll jump back in at the end of this chapter to explain more about what you can expect from this
+    translation.
+
 I’ll take you through writing a ray tracer in the order I do it, along with some debugging tips. By
 the end, you will have a ray tracer that produces some great images. You should be able to do this
 in a weekend. If you take longer, don’t worry about it. I use C++ as the driving language, but you
 don’t need to. However, I suggest you do, because it’s fast, portable, and most production movie and
 video game renderers are written in C++. Note that I avoid most “modern features” of C++, but
 inheritance and operator overloading are too useful for ray tracers to pass on.
+
 
 > I do not provide the code online, but the code is real and I show all of it except for a few
 > straightforward operators in the `vec3` class. I am a big believer in typing in code to learn it,
@@ -62,35 +73,6 @@ The code thus provides a baseline implementation, with tons of improvements left
 enjoy. There are endless ways one can optimize and modernize the code; we prioritize the simple
 solution.
 
-
-!!!
-    Hi! I'm Tim, the editor of the Rust translation of Peter Shirley's fantastic _"Ray Tracing in One
-    Weekend"_. Thanks for taking the time to read this translation!
-
-    I figured it would be important to jump in somewhere early in the piece, so you know that you're
-    reading an editing version of Peter's document.
-
-    I want to make it clear I consider Peter's book to be outstanding, and that this translation intends
-    to be respectful, unintrusive, and faithful to the original, in spirit, and in execution.
-    
-    Peter's philosophy regarding the use of C++ for this book, as well as a direct, no-frills
-    architectural style, is a great choice. It makes the code highly readable, not to
-    mention _portable_. For readers that prefer to work through this book in pure Rust, this translation
-    has you covered.
-
-    My changes will be clearly marked, and accompanied by a blue admonition when I have something to
-    add, or...
-
-!!! warning
-    ...an orange admonition, like this, when it's made sense to remove C++-specific content that would
-    complicate matters for Rust readers.
-
-!!!
-    Finally, and most importantly, all C++ code and references within the text have been changed to
-    their Rust equivalent, unless it makes sense to retain the C++ references. These changes are _not_
-    noted with an admonition.
-
-
 We assume a little bit of familiarity with vectors (like dot product and vector addition). If you
 don’t know that, do a little review. If you need that review, or to learn it for the first time,
 check out the online [_Graphics Codex_][gfx-codex] by Morgan McGuire, _Fundamentals of Computer
@@ -117,7 +99,38 @@ at the end of this book.
 
 Let’s get on with it!
 
+!!!
+    Just before we do, I'd like to let you know how to spot my changes to the book.
 
+    I want to make it clear I consider Peter's book to be outstanding, and that this translation intends
+    to be respectful, unintrusive, and faithful to the original, in spirit, and in execution.
+
+    To that end, you'll always see the book's text first, followed by my notes.
+
+    Peter's thoughts regarding C++ are insightful and instructive: our translation doesn't aim to
+    replace that discussion with Rust.
+    
+    The code will be in Rust, however, and extremely limited sections of text will change, for example
+    when the text refers to details of the C++ code.
+
+    Peter's philosophy regarding the use of C++ for this book, as well as a direct, no-frills
+    architectural style, is a great choice. It makes the code highly readable, not to
+    mention _portable_. For readers that prefer to work through this book in pure Rust, this translation
+    has you covered.
+
+    My changes will be clearly marked, and accompanied by a blue admonition when I have something to
+    add, or...
+
+!!! warning
+    ...an orange admonition, like this, when it made sense to remove specific content that would
+    complicate matters for Rust readers.
+
+!!!
+    Finally, and most importantly, all C++ code and references within the text have been changed to
+    their Rust equivalent, and will not, by default, have an admonition. If it's Rust, I wrote it.
+
+    From here on, expect minimal interjection from me. Enjoy the book, happy tracing, and may all your
+    surface normals be front-facing (or at least some of them!).
 
 Output an Image
 ====================================================================================================
@@ -136,7 +149,7 @@ start with a plain text ppm file. Here’s a nice description from Wikipedia:
     We'll be adopting a style of Rust that aims to be a line-for-line translation of the C++ code,
     wherever possible. The rationale is that it should streamline the adoption of code changes from
     upstream, and minimise bike-shed discussions that would otherwise detract from the core message
-    of the book - that ray tracing is awesome, and possible in one weekend.
+    of the book - that ray tracing is awesome, and totally possible in one weekend!
 
 <div class='together'>
 Let’s make some Rust code to output such a thing:
@@ -155,7 +168,7 @@ Let’s make some Rust code to output such a thing:
         for j in 0..image_height {
             for i in 0..image_width {
                 let r = i as f64 / ((image_width - 1) as f64);
-                let g = j as f64 / ((image_width - 1) as f64);
+                let g = j as f64 / ((image_height - 1) as f64);
                 let b = 0.0;
     
                 let ir = (259.999 * r) as i32;
@@ -221,12 +234,16 @@ and would run the optimized program like this:
     cargo run --release > image.ppm
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The examples above assume that you are building with CMake, using the same approach as the
-`CMakeLists.txt` file in the included source. Use whatever build environment (and language) you're
-most comfortable with.
+The examples above assume that you are building with cargo, using the same approach as in the
+included source. Use whatever build environment (and language) you're most comfortable with.
 
 !!! warning
-    Cargo behaves the same on all systems, so the comments dedicated to Mac/Linux have been removed.
+    We're using cargo, so I've edited the paragraph above to refer to cargo, and tried to retain
+    style and sentiment of the original text.
+
+!!! warning
+    Cargo behaves the same on all systems, so platform-specific comments for Mac/Linux have been
+    removed.
 
 Opening the output file (in `ToyViewer` on my Mac, but try it in your favorite image viewer and
 Google “ppm viewer” if your viewer doesn’t support it) shows this result:
@@ -277,9 +294,9 @@ If you want to produce other image formats, I am a fan of `stb_image.h`, a heade
 available on GitHub at https://github.com/nothings/stb.
 
 !!!
-    In Rust, there is a great ecosystem of freely available 3rd party libraries. When the time comes
-    to write other formats, this translation will use the 'image' crate:
-    https://crates.io/crates/image
+    `stb_image.h` is a great choice for C++ projects! For our Rust project, we can leverage a broad
+    ecosystem of freely available 3rd party libraries. When the time comes to write image files in
+    other formats, this translation will use the [`image` crate](https://crates.io/crates/image).
 
 
 Adding a Progress Indicator
@@ -305,11 +322,11 @@ and instead write to the error output stream (`std::io::Stderr`):
     
         for j in 0..image_height {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Rust highlight
-            eprintln!("\rScanlines remaining: {}", (image_height - j));
+            eprintln!("\rScanlines remaining: {}", image_height - j);
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Rust
             for i in 0..image_width {
                 let r = i as f64 / ((image_width - 1) as f64);
-                let g = j as f64 / ((image_width - 1) as f64);
+                let g = j as f64 / ((image_height - 1) as f64);
                 let b = 0.0;
     
                 let ir = (259.999 * r) as i32;
@@ -333,194 +350,276 @@ runs so fast that you don't even see it! Don't worry -- you'll have lots of time
 watch a slowly updating progress line as we expand our ray tracer.
 
 
-The vec3 Class
+The Vec3 Struct
 ====================================================================================================
-Almost all graphics programs have some class(es) for storing geometric vectors and colors. In many
+Almost all graphics programs have some type(s) for storing geometric vectors and colors. In many
 systems these vectors are 4D (3D position plus a homogeneous coordinate for geometry, or RGB plus an
 alpha transparency component for colors). For our purposes, three coordinates suffice. We’ll use the
-same class `vec3` for colors, locations, directions, offsets, whatever. Some people don’t like this
+same struct `Vec3` for colors, locations, directions, offsets, whatever. Some people don’t like this
 because it doesn’t prevent you from doing something silly, like subtracting a position from a color.
 They have a good point, but we’re going to always take the “less code” route when not obviously
-wrong. In spite of this, we do declare two aliases for `vec3`: `point3` and `color`. Since these two
-types are just aliases for `vec3`, you won't get warnings if you pass a `color` to a function
-expecting a `point3`, and nothing is stopping you from adding a `point3` to a `color`, but it makes
+wrong. In spite of this, we do declare two aliases for `Vec3`: `Point3` and `Color`. Since these two
+types are just aliases for `Vec3`, you won't get warnings if you pass a `Color` to a function
+expecting a `Point3`, and nothing is stopping you from adding a `Point3` to a `Color`, but it makes
 the code a little bit easier to read and to understand.
 
-We define the `vec3` class in the top half of a new `vec3.h` header file, and define a set of useful
+!!!
+    This section is our first major text substitution of references to the original C++ code.
+    
+    In Rust, [`class`](https://en.cppreference.com/w/cpp/keyword/class) is not a keyword: instead we
+    use [`struct`](https://doc.rust-lang.org/std/keyword.struct.html).
+    
+    Rust linters tend to require upper-camelcase for struct names. As such, our code will use `Vec3`,
+    `Point3`, and `Color`.
+
+We define the `Vec3` struct in the top half of a new `vec3.rs` source file, and define a set of useful
 vector utility functions in the bottom half:
 
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
-    #ifndef VEC3_H
-    #define VEC3_H
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Rust
+    #![allow(dead_code)]
+    use std::fmt::Display;
+    use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub};
 
-    #include <cmath>
-    #include <iostream>
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct Vec3 {
+        pub e: [f64; 3],
+    }
 
-    using std::sqrt;
-
-    class vec3 {
-        public:
-        double e[3];
-
-        vec3() : e{0,0,0} {}
-        vec3(double e0, double e1, double e2) : e{e0, e1, e2} {}
-
-        double x() const { return e[0]; }
-        double y() const { return e[1]; }
-        double z() const { return e[2]; }
-
-        vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }
-        double operator[](int i) const { return e[i]; }
-        double& operator[](int i) { return e[i]; }
-
-        vec3& operator+=(const vec3& v) {
-            e[0] += v.e[0];
-            e[1] += v.e[1];
-            e[2] += v.e[2];
-            return *this;
+    impl Default for Vec3 {
+        fn default() -> Self {
+            Self { e: [0.0, 0.0, 0.0] }
         }
+    }
 
-        vec3& operator*=(double t) {
-            e[0] *= t;
-            e[1] *= t;
-            e[2] *= t;
-            return *this;
+    impl Vec3 {
+        pub fn new(e0: f64, e1: f64, e2: f64) -> Self {
+            Self { e: [e0, e1, e2] }
         }
-    
-        vec3& operator/=(double t) {
-            return *this *= 1/t;
+        pub fn x(&self) -> f64 {
+            self.e[0]
         }
-    
-        double length() const {
-            return sqrt(length_squared());
+        pub fn y(&self) -> f64 {
+            self.e[1]
         }
+        pub fn z(&self) -> f64 {
+            self.e[2]
+        }
+        pub fn length(&self) -> f64 {
+            self.length_squared().sqrt()
+        }
+        pub fn length_squared(&self) -> f64 {
+            self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
+        }
+        pub fn dot(lhs: Self, rhs: Self) -> f64 {
+            lhs.e[0] * rhs.e[0] + lhs.e[1] * rhs.e[1] + lhs.e[2] * rhs.e[2]
+        }
+        pub fn cross(u: Self, v: Self) -> Self {
+            Self {
+                e: [
+                    u.e[1] * v.e[2] - u.e[2] * v.e[1],
+                    u.e[2] * v.e[0] - u.e[0] * v.e[2],
+                    u.e[0] * v.e[1] - u.e[1] * v.e[0],
+                ],
+            }
+        }
+        pub fn unit_vector(val: Self) -> Self {
+            val / val.length()
+        }
+    }
 
-        double length_squared() const {
-            return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
+    impl Neg for Vec3 {
+        type Output = Self;
+        fn neg(self) -> Self::Output {
+            Self {
+                e: [-self.e[0], -self.e[1], -self.e[2]],
+            }
         }
-    };
+    }
 
-    // point3 is just an alias for vec3, but useful for geometric clarity in the code.
-    using point3 = vec3;
+    impl Index<usize> for Vec3 {
+        type Output = f64;
+        fn index(&self, index: usize) -> &Self::Output {
+            &self.e[index]
+        }
+    }
 
+    impl IndexMut<usize> for Vec3 {
+        fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+            &mut self.e[index]
+        }
+    }
+
+    impl AddAssign for Vec3 {
+        fn add_assign(&mut self, rhs: Self) {
+            self.e[0] += rhs.e[0];
+            self.e[1] += rhs.e[1];
+            self.e[2] += rhs.e[2];
+        }
+    }
+
+    impl MulAssign<f64> for Vec3 {
+        fn mul_assign(&mut self, rhs: f64) {
+            self.e[0] *= rhs;
+            self.e[1] *= rhs;
+            self.e[2] *= rhs;
+        }
+    }
+
+    impl DivAssign<f64> for Vec3 {
+        fn div_assign(&mut self, rhs: f64) {
+            self.mul_assign(rhs.recip());
+        }
+    }
+
+    impl DivAssign<Vec3> for Vec3 {
+        fn div_assign(&mut self, rhs: Vec3) {
+            self.e[0] /= rhs.e[0];
+            self.e[1] /= rhs.e[1];
+            self.e[2] /= rhs.e[2];
+        }
+    }
+
+    // Point3 is just an alias for Vec3, but useful for geometric clarity in the code.
+    pub type Point3 = Vec3;
 
     // Vector Utility Functions
 
-    inline std::ostream& operator<<(std::ostream& out, const vec3& v) {
-        return out << v.e[0] << ' ' << v.e[1] << ' ' << v.e[2];
+    impl Display for Vec3 {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{} {} {}", self.e[0], self.e[1], self.e[2])
+        }
     }
 
-    inline vec3 operator+(const vec3& u, const vec3& v) {
-        return vec3(u.e[0] + v.e[0], u.e[1] + v.e[1], u.e[2] + v.e[2]);
+    impl Add for Vec3 {
+        type Output = Self;
+        fn add(self, rhs: Self) -> Self::Output {
+            Self {
+                e: [
+                    self.e[0] + rhs.e[0],
+                    self.e[1] + rhs.e[1],
+                    self.e[2] + rhs.e[2],
+                ],
+            }
+        }
     }
 
-    inline vec3 operator-(const vec3& u, const vec3& v) {
-        return vec3(u.e[0] - v.e[0], u.e[1] - v.e[1], u.e[2] - v.e[2]);
+    impl Sub for Vec3 {
+        type Output = Self;
+        fn sub(self, rhs: Self) -> Self::Output {
+            Self {
+                e: [
+                    self.e[0] - rhs.e[0],
+                    self.e[1] - rhs.e[1],
+                    self.e[2] - rhs.e[2],
+                ],
+            }
+        }
     }
 
-    inline vec3 operator*(const vec3& u, const vec3& v) {
-        return vec3(u.e[0] * v.e[0], u.e[1] * v.e[1], u.e[2] * v.e[2]);
+    impl Mul for Vec3 {
+        type Output = Self;
+        fn mul(self, rhs: Self) -> Self::Output {
+            Self {
+                e: [
+                    self.e[0] * rhs.e[0],
+                    self.e[1] * rhs.e[1],
+                    self.e[2] * rhs.e[2],
+                ],
+            }
+        }
     }
 
-    inline vec3 operator*(double t, const vec3& v) {
-        return vec3(t*v.e[0], t*v.e[1], t*v.e[2]);
+    impl Mul<Vec3> for f64 {
+        type Output = Vec3;
+        fn mul(self, rhs: Vec3) -> Self::Output {
+            Vec3 {
+                e: [rhs.e[0] * self, rhs.e[1] * self, rhs.e[2] * self],
+            }
+        }
     }
 
-    inline vec3 operator*(const vec3& v, double t) {
-        return t * v;
+    impl Mul<f64> for Vec3 {
+        type Output = Self;
+        fn mul(self, rhs: f64) -> Self::Output {
+            rhs * self
+        }
     }
 
-    inline vec3 operator/(const vec3& v, double t) {
-        return (1/t) * v;
+    impl Div<f64> for Vec3 {
+        type Output = Vec3;
+        fn div(self, rhs: f64) -> Self::Output {
+            rhs.recip() * self
+        }
     }
 
-    inline double dot(const vec3& u, const vec3& v) {
-        return u.e[0] * v.e[0]
-             + u.e[1] * v.e[1]
-             + u.e[2] * v.e[2];
-    }
-
-    inline vec3 cross(const vec3& u, const vec3& v) {
-        return vec3(u.e[1] * v.e[2] - u.e[2] * v.e[1],
-                    u.e[2] * v.e[0] - u.e[0] * v.e[2],
-                    u.e[0] * v.e[1] - u.e[1] * v.e[0]);
-    }
-
-    inline vec3 unit_vector(const vec3& v) {
-        return v / v.length();
-    }
-
-    #endif
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    [Listing [vec3-class]: <kbd>[vec3.h]</kbd> vec3 definitions and helper functions]
+    [Listing [vec3-struct]: <kbd>[vec3.rs]</kbd> Vec3 definitions and helper functions]
 
 We use `double` here, but some ray tracers use `float`. `double` has greater precision and range,
 but is twice the size compared to `float`. This increase in size may be important if you're
 programming in limited memory conditions (such as hardware shaders). Either one is fine -- follow
 your own tastes.
 
+!!!
+    In Rust, [`double`](https://en.cppreference.com/w/cpp/language/types) is called
+    [`f64`](https://doc.rust-lang.org/std/primitive.f64.html), and `float` is called `f32`. We'll
+    stick with the book and use double-precision floating point, `f64`.
 
 Color Utility Functions
 ------------------------
-Using our new `vec3` class, we'll create a new `color.h` header file and define a utility function
+Using our new `Vec3` struct, we'll create a new `color.rs` source file and define a utility function
 that writes a single pixel's color out to the standard output stream.
 
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
-    #ifndef COLOR_H
-    #define COLOR_H
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Rust
+    pub type Color = crate::vec3::Vec3;
 
-    #include "vec3.h"
-
-    #include <iostream>
-
-    using color = vec3;
-
-    void write_color(std::ostream& out, const color& pixel_color) {
-        // Write the translated [0,255] value of each color component.
-        out << int(255.999 * pixel_color.x()) << ' '
-            << int(255.999 * pixel_color.y()) << ' '
-            << int(255.999 * pixel_color.z()) << '\n';
-    }
-
-    #endif
+    pub fn write_color(pixel_color: Color) {
+        println!(
+            "{} {} {}",
+            (259.999 * pixel_color.x()) as i32,
+            (259.999 * pixel_color.y()) as i32,
+            (259.999 * pixel_color.z()) as i32
+        );
+    }    
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    [Listing [color]: <kbd>[color.h]</kbd> color utility functions]
+    [Listing [color]: <kbd>[color.rs]</kbd> color utility functions]
 
 <div class='together'>
 Now we can change our main to use both of these:
 
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ highlight
-    #include "color.h"
-    #include "vec3.h"
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Rust highlight
+    use in_one_weekend::color::*;
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Rust
 
-    #include <iostream>
-
-    int main() {
-
+    fn main() {
         // Image
-
-        int image_width = 256;
-        int image_height = 256;
-
+    
+        let image_width = 256;
+        let image_height = 256;
+    
         // Render
+    
+        print!("P3\n{} {}\n255\n", image_width, image_height);
+    
+        for j in 0..image_height {
+            eprintln!("\rScanlines remaining: {}", image_height - j);
+            for i in 0..image_width {
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Rust highlight
+                let pixel_color = Color::new(
+                    i as f64 / ((image_width - 1) as f64),
+                    j as f64 / ((image_height - 1) as f64),
+                    0.0
+                );
 
-        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-
-        for (int j = 0; j < image_height; j++) {
-            std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
-            for (int i = 0; i < image_width; i++) {
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ highlight
-                auto pixel_color = color(double(i)/(image_width-1), double(j)/(image_height-1), 0);
-                write_color(std::cout, pixel_color);
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+                write_color(pixel_color);
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Rust
             }
         }
-
-        std::clog << "\rDone.                 \n";
+        eprintln!("\rDone.                 \n");
     }
+
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    [Listing [ppm-2]: <kbd>[main.cc]</kbd> Final code for the first PPM image]
+    [Listing [ppm-2]: <kbd>[main.rs]</kbd> Final code for the first PPM image]
 
 </div>
 
