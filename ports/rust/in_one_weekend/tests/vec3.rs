@@ -173,8 +173,5 @@ fn mul_by_f64_commutative() {
 
 #[test]
 fn div_by_f64() {
-    assert_eq!(
-        Vec3::new(-4.0, 6.0, 8.0) / 2.0,
-        Vec3::new(-2.0, 3.0, 4.0)
-    );
+    assert_eq!(Vec3::new(-4.0, 6.0, 8.0) / 2.0, Vec3::new(-2.0, 3.0, 4.0));
 }
