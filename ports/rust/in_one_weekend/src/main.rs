@@ -2,8 +2,10 @@ use in_one_weekend::color::*;
 use in_one_weekend::ray::*;
 use in_one_weekend::vec3::*;
 
-fn ray_color(_r: &Ray) -> Color {
-    Color::new(0.0, 0.0, 0.0)
+fn ray_color(r: &Ray) -> Color {
+    let unit_direction = Vec3::unit_vector(*r.direction());
+    let a = 0.5 * (unit_direction.y() + 1.0);
+    (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
 }
 
 fn main() {
